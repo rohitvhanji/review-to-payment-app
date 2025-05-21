@@ -1,59 +1,125 @@
 import { useState } from 'react';
 import QRCode from 'react-qr-code';
-import PatientForm from './PatientForm';
+import axios from 'axios';
 
-const GOOGLE_REVIEW_URL = "https://www.google.com/search?rlz=1C5GCCM_en___IN1147&sca_esv=b97c0088c4eec1a1&cs=1&si=APYL9bs7Hg2KMLB-4tSoTdxuOx8BdRvHbByC_AuVpNyh0x2KzQON-usm7ehNRpdkdqvhOZKKPSstjoKtQ2CnFy0Vt1Y7LBMuPBHBWzJdz36Pvc6uTC5IeAjE6vU3riloyClqFMzroMBObusigP17WT2VIugZpgSrDQ%3D%3D&q=Dr.+Dhanale+Dental+Care+Reviews&sa=X&ved=2ahUKEwjq9ousx7SNAxXQ-TgGHao5NrsQ0bkNegQIHxAD&biw=1382&bih=793&dpr=2.5#lrd=0x3bc101acc68de19d:0x71178828d31100c6,3,,,,";
-const PAYMENT_LINK = "upi://pay?pa=yourupi@upi&pn=DhanaleDental";
+const GOOGLE_REVIEW_URL = "https://g.co/kgs/jEdHyuL"; // Your Google review link
+const PAYMENT_LINK = "upi://pay?pa=yourupi@upi&pn=Dhanale Dental Care"; // Replace with your actual UPI or payment link
 
-function App() {
-  const [step, setStep] = useState("case");
+export default function App() {
+  const [step, setStep] = useState("review");
+  const [caseData, setCaseData] = useState({
+    name: "",
+    contact: "",
+    description: "",
+    date: "",
+  });
+  const [caseSubmitted, setCaseSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleFormSubmit = () => setStep("review");
   const handleReviewClick = () => {
     window.open(GOOGLE_REVIEW_URL, "_blank");
     setStep("confirm");
   };
+
   const handleConfirmClick = async () => {
-    await fetch("https://your-backend-url.onrender.com/api/confirm-review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirmed: true }),
-    });
-    setStep("pay");
+    try {
+      await axios.post("/api/confirm-review", { confirmed: true });
+      setStep("pay");
+    } catch {
+      alert("Failed to confirm review, please try again.");
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCaseData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCaseSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await axios.post("/api/case", caseData);
+      setCaseSubmitted(true);
+      setCaseData({ name: "", contact: "", description: "", date: "" });
+    } catch (err) {
+      setError("Failed to submit case. Please try again.");
+    }
+    setLoading(false);
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto text-center font-sans">
-      <h1 className="text-3xl font-bold text-blue-700 mb-6">Dhanale Dental Care</h1>
-
-      {step === "case" && <PatientForm onSubmit={handleFormSubmit} />}
+    <div style={{ maxWidth: 480, margin: "2rem auto", fontFamily: "Arial, sans-serif", padding: "1rem", textAlign: "center", border: "1px solid #ddd", borderRadius: 8 }}>
+      <h1 style={{ color: "#0070f3" }}>Dhanale Dental Care</h1>
+      <p>Thank you for visiting Dhanale Dental Care.<br />Support us with a quick Google review ❤️<br />Tap below and share your feedback.</p>
 
       {step === "review" && (
-        <>
-          <h2 className="text-xl mb-4">Please leave us a review on Google</h2>
-          <button onClick={handleReviewClick} className="bg-green-600 text-white px-4 py-2 rounded">
-            Leave Review
-          </button>
-        </>
+        <button style={btnStyle} onClick={handleReviewClick}>Leave a Review</button>
       )}
 
       {step === "confirm" && (
         <>
-          <h2 className="mb-4">Did you submit the review?</h2>
-          <button onClick={handleConfirmClick} className="bg-blue-600 text-white px-4 py-2 rounded">
-            Yes, show payment QR
-          </button>
+          <h2>Did you leave the review?</h2>
+          <button style={btnStyle} onClick={handleConfirmClick}>Yes, Show Payment QR</button>
         </>
       )}
 
       {step === "pay" && (
         <>
-          <h2 className="mb-4">Scan to Pay</h2>
-          <QRCode value={PAYMENT_LINK} size={200} />
+          <h2>Scan to Pay</h2>
+          <QRCode value={PAYMENT_LINK} size={180} />
+          <p>Thank you for your support!</p>
         </>
       )}
+
+      <hr style={{ margin: "2rem 0" }} />
+
+      <h2>Submit Your Case Details</h2>
+      {caseSubmitted && <p style={{ color: "green" }}>Case submitted successfully!</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <form onSubmit={handleCaseSubmit} style={{ textAlign: "left" }}>
+        <label>
+          Name:<br />
+          <input type="text" name="name" value={caseData.name} onChange={handleInputChange} required style={inputStyle} />
+        </label><br /><br />
+        <label>
+          Contact Number:<br />
+          <input type="tel" name="contact" value={caseData.contact} onChange={handleInputChange} required style={inputStyle} />
+        </label><br /><br />
+        <label>
+          Description:<br />
+          <textarea name="description" value={caseData.description} onChange={handleInputChange} required rows={3} style={inputStyle} />
+        </label><br /><br />
+        <label>
+          Preferred Appointment Date:<br />
+          <input type="date" name="date" value={caseData.date} onChange={handleInputChange} required style={inputStyle} />
+        </label><br /><br />
+        <button type="submit" disabled={loading} style={btnStyle}>
+          {loading ? "Submitting..." : "Submit Case"}
+        </button>
+      </form>
     </div>
   );
 }
 
-export default App;
+const btnStyle = {
+  backgroundColor: "#0070f3",
+  color: "white",
+  padding: "0.6rem 1.2rem",
+  border: "none",
+  borderRadius: 4,
+  cursor: "pointer",
+  fontSize: "1rem",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "0.4rem 0.6rem",
+  fontSize: "1rem",
+  borderRadius: 4,
+  border: "1px solid #ccc",
+  boxSizing: "border-box",
+};
