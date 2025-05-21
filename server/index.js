@@ -39,16 +39,6 @@ app.post('/api/admin-login', (req, res) => {
   }
 });
 
-// Get all patient cases (admin only)
+// Get all cases
 app.get('/api/cases', async (req, res) => {
-  const { data, error } = await supabase
-    .from('patient_cases')
-    .select('*')
-    .order('date', { ascending: false });
-
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ success: true, data });
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  const { data, error } = await supabase.from('patient_cases').select('*').order('date', { ascending:
