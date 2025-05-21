@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import QRCode from 'react-qr-code';
+import './index.css';
 
-const GOOGLE_REVIEW_URL = "https://www.google.com/search?q=amogh+dhanale+clinic+kolhapur&sca_esv=b97c0088c4eec1a1&rlz=1C5GCCM_en___IN1147&ei=hsQtaIX4H97V4-EPma7IkAs&ved=0ahUKEwiF0_bfxbSNAxXe6jgGHRkXErIQ4dUDCBA&uact=5&oq=amogh+dhanale+clinic+kolhapur&gs_lp=Egxnd3Mtd2l6LXNlcnAiHWFtb2doIGRoYW5hbGUgY2xpbmljIGtvbGhhcHVyMgcQIRigARgKMgcQIRigARgKSLkQUIADWJEPcAF4AJABAJgB_QGgAZ8MqgEFMC44LjG4AQPIAQD4AQGYAgmgAqYLwgILEAAYgAQYsAMYogSYAwCIBgGQBgWSBwUxLjYuMqAH6i6yBwUwLjYuMrgHoQs&sclient=gws-wiz-serp&lqi=Ch1hbW9naCBkaGFuYWxlIGNsaW5pYyBrb2xoYXB1ckjjmdSG2bGAgAhaKRAAEAEQAhgBGAMiHWFtb2doIGRoYW5hbGUgY2xpbmljIGtvbGhhcHVykgENZGVudGFsX2NsaW5pYw#rlimm=8149131759671378118&lrd=0x3bc101acc68de19d:0x71178828d31100c6,3,,,,"; // replace with your Google link
-const PAYMENT_LINK = "upi://pay?pa=yourupi@upi&pn=YourName"; // or Stripe
+const GOOGLE_REVIEW_URL = "https://g.co/kgs/jEdHyuL"; // Your Google review link
+const PAYMENT_LINK = "upi://pay?pa=dhanaledental@upi&pn=DhanaleDentalCare"; // Replace with real UPI or Stripe link
 
-function App() {
+export default function App() {
   const [step, setStep] = useState("review");
 
   const handleReviewClick = () => {
@@ -13,36 +14,58 @@ function App() {
   };
 
   const handleConfirmClick = async () => {
-    await fetch("https://your-backend-url.onrender.com/api/confirm-review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirmed: true }),
-    });
+    // Optional: record confirmation in backend
+    try {
+      await fetch("https://your-backend-url.onrender.com/api/confirm-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmed: true }),
+      });
+    } catch (err) {
+      console.log("Confirmation logging failed:", err);
+    }
     setStep("pay");
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "Arial", textAlign: "center" }}>
-      {step === "review" && (
-        <>
-          <h1>Leave Us a Google Review</h1>
-          <button onClick={handleReviewClick}>Leave Review</button>
-        </>
-      )}
-      {step === "confirm" && (
-        <>
-          <h2>Did you leave the review?</h2>
-          <button onClick={handleConfirmClick}>Yes, show QR</button>
-        </>
-      )}
-      {step === "pay" && (
-        <>
-          <h2>Scan to Pay</h2>
-          <QRCode value={PAYMENT_LINK} size={200} />
-        </>
-      )}
+    <div className="container">
+      <header>
+        <img src="/logo.png" alt="Dhanale Dental Care" className="logo" />
+        <h1>Thank you for visiting <span>Dhanale Dental Care</span></h1>
+      </header>
+
+      <main>
+        {step === "review" && (
+          <div className="card">
+            <h2>Support us with a quick Google review ❤️</h2>
+            <p>Tap below and share your feedback.</p>
+            <button className="btn" onClick={handleReviewClick}>
+              Leave a Review
+            </button>
+          </div>
+        )}
+
+        {step === "confirm" && (
+          <div className="card">
+            <h2>Did you leave the review?</h2>
+            <button className="btn" onClick={handleConfirmClick}>
+              Yes, show payment QR
+            </button>
+          </div>
+        )}
+
+        {step === "pay" && (
+          <div className="card">
+            <h2>Scan to Pay</h2>
+            <QRCode value={PAYMENT_LINK} size={200} />
+            <p style={{ marginTop: "1rem" }}>UPI ID: dhanaledental@upi</p>
+          </div>
+        )}
+      </main>
+
+      <footer>
+        © 2025 Dhanale Dental Care · Crafted with care
+      </footer>
     </div>
   );
 }
-
-export default App;
