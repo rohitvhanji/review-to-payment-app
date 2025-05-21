@@ -24,7 +24,7 @@ export default function App() {
 
   const handleConfirmClick = async () => {
     try {
-      await axios.post("/api/confirm-review", { confirmed: true });
+      await axios.post("https://review-to-payment-app.onrender.com/api/confirm-review", { confirmed: true });
       setStep("pay");
     } catch {
       alert("Failed to confirm review, please try again.");
@@ -41,7 +41,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      await axios.post("/api/case", caseData);
+      await axios.post("https://review-to-payment-app.onrender.com/api/case", caseData);
       setCaseSubmitted(true);
       setCaseData({ name: "", contact: "", description: "", date: "" });
     } catch (err) {
