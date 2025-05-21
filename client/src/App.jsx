@@ -36,7 +36,7 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      await axios.post('/api/case', caseData);
+      await axios.post('https://review-to-payment-app.onrender.com/api/case', caseData);
       alert("Case submitted successfully!");
       setCaseData({ name: "", contact: "", description: "", date: "" });
     } catch (err) {
