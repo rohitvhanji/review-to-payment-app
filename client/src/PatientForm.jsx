@@ -1,35 +1,45 @@
-// src/PatientForm.jsx
-import { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 
-function PatientForm({ onSubmit }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    contact: '',
-    description: '',
-    date: '',
-  });
+const BACKEND_URL = 'https://review-to-payment-app.onrender.com'; // your deployed backend URL
 
-  const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+export default function PatientForm() {
+  const [form, setForm] = useState({ name: '', contact: '', description: '', date: '' });
+  const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async e => {
     e.preventDefault();
-    await axios.post("https://your-backend-url.onrender.com/api/case", formData);
-    onSubmit(); // move to next step
+    setMessage('');
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/case`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Failed to submit case');
+      setMessage('Case submitted successfully!');
+      setForm({ name: '', contact: '', description: '', date: '' });
+    } catch (err) {
+      setMessage(err.message);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4 p-4 border rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Patient Case Form</h2>
-      <input name="name" required placeholder="Full Name" className="w-full p-2 border" onChange={handleChange} />
-      <input name="contact" required placeholder="Contact Number" className="w-full p-2 border" onChange={handleChange} />
-      <textarea name="description" required placeholder="Problem Description" className="w-full p-2 border" onChange={handleChange} />
-      <input name="date" type="date" required className="w-full p-2 border" onChange={handleChange} />
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
-    </form>
+    <div style={{ maxWidth: 500, margin: 'auto' }}>
+      <h2>Patient Case Submission</h2>
+      <form onSubmit={handleSubmit}>
+        <label>Name</label><br />
+        <input name="name" value={form.name} onChange={handleChange} required /><br />
+        <label>Contact</label><br />
+        <input name="contact" value={form.contact} onChange={handleChange} required /><br />
+        <label>Description</label><br />
+        <textarea name="description" value={form.description} onChange={handleChange} required /><br />
+        <label>Date</label><br />
+        <input type="date" name="date" value={form.date} onChange={handleChange} required /><br /><br />
+        <button type="submit">Submit Case</button>
+      </form>
+      {message && <p>{message}</p>}
+    </div>
   );
 }
-
-export default PatientForm;
