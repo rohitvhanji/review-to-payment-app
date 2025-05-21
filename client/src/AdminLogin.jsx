@@ -1,27 +1,31 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-export default function AdminLogin({ onLogin }) {
+function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post('/api/admin-login', { username, password });
-      if (res.data.success) onLogin();
-    } catch (err) {
+  const handleLogin = () => {
+    if (username === 'admin' && password === 'dhanale123') {
+      navigate('/admin/dashboard');
+    } else {
       setError('Invalid credentials');
     }
   };
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
       <h2>Admin Login</h2>
-      <input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} /><br />
-      <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} /><br />
+      <input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
+      <br /><br />
+      <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+      <br /><br />
       <button onClick={handleLogin}>Login</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div style={{ color: 'red', marginTop: '1rem' }}>{error}</div>
     </div>
   );
 }
+
+export default AdminLogin;
