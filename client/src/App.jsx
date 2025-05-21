@@ -22,7 +22,7 @@ function App() {
     setStep("confirm");
   };
   const handleConfirmClick = async () => {
-    await axios.post('/api/confirm-review', { confirmed: true });
+    await axios.post('https://review-to-payment-app.onrender.com/api/confirm-review', { confirmed: true });
     setStep("pay");
   };
 
