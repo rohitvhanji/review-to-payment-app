@@ -7,27 +7,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔑 Initialize Supabase client
+// Initialize Supabase client
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role key on backend only
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// ✅ Confirm Review Endpoint
+// Confirm review endpoint
 app.post('/api/confirm-review', (req, res) => {
   console.log('Review confirmed:', req.body);
   res.json({ status: 'success' });
 });
 
-// ✅ Patient Case Form Submission
+// Patient case form submission endpoint
 app.post('/api/case', async (req, res) => {
   const { name, contact, description, date } = req.body;
+
   const { data, error } = await supabase
     .from('patient_cases')
     .insert([{ name, contact, description, date }]);
 
   if (error) {
-    console.error("Supabase insert error:", error);
+    console.error('Supabase insert error:', error);
     return res.status(500).json({ error: error.message });
   }
 
