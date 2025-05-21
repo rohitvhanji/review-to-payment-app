@@ -46,6 +46,7 @@ export default function App() {
       setCaseData({ name: "", contact: "", description: "", date: "" });
     } catch (err) {
       setError("Failed to submit case. Please try again.");
+      console.log(err)
     }
     setLoading(false);
   };
