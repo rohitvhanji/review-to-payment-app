@@ -1,47 +1,58 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 
-const ADMIN_USERNAME = "admin";  // Change as you want
-const ADMIN_PASSWORD = "password123";
+const BACKEND_URL = 'https://review-to-payment-app.onrender.com';
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const [cases, setCases] = useState(null);
 
-  const handleSubmit = e => {
+  const handleChange = e => setCredentials({ ...credentials, [e.target.name]: e.target.value });
+
+  const handleLogin = async e => {
     e.preventDefault();
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      navigate("/admin/dashboard");
-    } else {
-      setError("Invalid credentials");
+    setError('');
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+      if (!res.ok) throw new Error('Invalid credentials');
+      // fetch all cases after successful login
+      const casesRes = await fetch(`${BACKEND_URL}/api/cases`);
+      const casesData = await casesRes.json();
+      setCases(casesData.data || casesData);
+    } catch (err) {
+      setError(err.message);
+      setCases(null);
     }
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "Arial", maxWidth: 400, margin: "auto" }}>
-      <h1>Admin Login</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-          required
-          style={{ display: "block", marginBottom: "1rem", width: "100%" }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          style={{ display: "block", marginBottom: "1rem", width: "100%" }}
-        />
+    <div style={{ maxWidth: 600, margin: 'auto' }}>
+      <h2>Admin Login</h2>
+      <form onSubmit={handleLogin}>
+        <label>Username</label><br />
+        <input name="username" value={credentials.username} onChange={handleChange} required /><br />
+        <label>Password</label><br />
+        <input type="password" name="password" value={credentials.password} onChange={handleChange} required /><br /><br />
         <button type="submit">Login</button>
       </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {cases && (
+        <>
+          <h3>Submitted Cases</h3>
+          <ul>
+            {cases.map(c => (
+              <li key={c.id}>
+                <b>{c.name}</b> ({c.contact}) — {new Date(c.date).toLocaleDateString()}<br />
+                {c.description}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
